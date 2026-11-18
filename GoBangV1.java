@@ -16,6 +16,10 @@ while (true) {
     System.out.println((currentPlayer ? "White" : "Black") + " player's turn.");//modified bu AI
 
     int[] move = getInput();
+    if (move == null) {
+        System.out.println("Game ended.");
+        break;
+    }
     int row = move[0];
     int col = move[1];
 
@@ -67,16 +71,24 @@ public static void printBoard() {
 //2. input and make move
 public static int[] getInput() {
     while (true) {
-        try {
-            System.out.print("Enter row and column. Please only enter two numbers in the range 0-18: \n");
-            int r = sc.nextInt();
-            int c = sc.nextInt();
-            if (isValid(r, c)) {
-                return new int[]{r, c};
-            }
-        } catch (Exception e) {
-            System.out.println("Please enter valid integers.");
-            sc.nextLine();
+        System.out.println("Enter row and column (0-18), or q to quit:");
+        if (!sc.hasNextLine()) {
+            return null;
+        }
+        String line = sc.nextLine().trim();
+        if (line.equalsIgnoreCase("q")) {
+            return null;
+        }
+        String[] parts = line.split("\\s+");
+        if (parts.length != 2 || !parts[0].matches("[0-9]{1,2}")
+                || !parts[1].matches("[0-9]{1,2}")) {
+            System.out.println("Enter two numbers separated by a space.");
+            continue;
+        }
+        int row = Integer.parseInt(parts[0]);
+        int col = Integer.parseInt(parts[1]);
+        if (isValid(row, col)) {
+            return new int[]{row, col};
         }
     }
 }
@@ -99,7 +111,7 @@ public static boolean isValid(int r, int c) {
     for (int row = 0; row < SIZE; row++) {
         int count = 1; 
         for (int i = 1;i<SIZE;i++) {
-            if (board[row][i].equals("empty") || board[row][i-1].equals("empty")) {
+            if (board[row][i].equals(empty) || board[row][i-1].equals(empty)) {
                 count = 1;
                 continue;
             }

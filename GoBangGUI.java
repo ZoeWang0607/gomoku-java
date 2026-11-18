@@ -16,11 +16,13 @@ public class GoBangGUI {
     private static final int margin = 30;
 
     public static void main(String[] args) {
+        SwingUtilities.invokeLater(GoBangGUI::showGame);
+    }
+
+    private static void showGame() {
         initializeBoard(); 
 
-        JFrame frame = new JFrame("Gobang_V2");
-        frame.setSize(700, 750);
-        frame.setLocationRelativeTo(null);
+        JFrame frame = new JFrame("Gomoku");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());
 
@@ -29,7 +31,8 @@ public class GoBangGUI {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                setBackground(new Color(240, 220, 180));
+                ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                        RenderingHints.VALUE_ANTIALIAS_ON);
 
                 
                 g.setColor(Color.BLACK);
@@ -79,6 +82,11 @@ public class GoBangGUI {
             }
         };
 
+        chessboard.setPreferredSize(new Dimension(600, 600));
+        chessboard.setBackground(new Color(240, 220, 180));
+        JLabel status = new JLabel(" Black to move");
+        frame.add(status, BorderLayout.SOUTH);
+
         chessboard.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -86,8 +94,8 @@ public class GoBangGUI {
                 int y = e.getY();
 
                 
-                int col = (x - margin + CELLSIZE / 2) / CELLSIZE;
-                int row = (y - margin + CELLSIZE / 2) / CELLSIZE;
+                int col = Math.round((x - margin) / (float) CELLSIZE);
+                int row = Math.round((y - margin) / (float) CELLSIZE);
 
                 if (row >= 0 && row < 19 && col >= 0 && col < 19) {
                     if (board[row][col].equals(empty)) {
@@ -97,17 +105,18 @@ public class GoBangGUI {
 
                         
                         if (checkWin()) {
-                            printBoard();
-                            JOptionPane.showMessageDialog(null, (currentPlayer ? "White" : "Black") + " wins!");
+                            chessboard.paintImmediately(0, 0, chessboard.getWidth(), chessboard.getHeight());
+                            JOptionPane.showMessageDialog(frame, (currentPlayer ? "White" : "Black") + " wins!");
                             initializeBoard();
                             currentPlayer = false;
                         } else if (isBoardFull()) {
-                            JOptionPane.showMessageDialog(null, "Draw! Board is full.");
+                            JOptionPane.showMessageDialog(frame, "Draw! Board is full.");
                             initializeBoard();
                             currentPlayer = false;
                         } else {
                             currentPlayer = !currentPlayer;
                         }
+                        status.setText(currentPlayer ? " White to move" : " Black to move");
                         chessboard.repaint();
                     }
                 }
@@ -115,6 +124,9 @@ public class GoBangGUI {
         });
 
         frame.add(chessboard, BorderLayout.CENTER);
+        frame.pack();
+        frame.setResizable(false);
+        frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }
 
@@ -160,7 +172,7 @@ public class GoBangGUI {
         for (int row = 0; row < SIZE; row++) {
             int count = 1;
             for (int i = 1; i < SIZE; i++) {
-                if (board[row][i].equals("empty") || board[row][i - 1].equals("empty")) {
+                if (board[row][i].equals(empty) || board[row][i - 1].equals(empty)) {
                     count = 1;
                     continue;
                 }
